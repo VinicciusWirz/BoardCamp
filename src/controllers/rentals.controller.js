@@ -96,12 +96,11 @@ export async function returnRental(req, res) {
 
     let delayFee = null;
     if (daysUsed > rent.daysRented) {
-      delayFee = daysUsed * (rent.originalPrice / rent.daysRented);
+      delayFee = daysUsed * (rent.originalPrice / (daysUsed - rent.daysRented));
     } else {
       delayFee = 0;
     }
 
-    const rentDate = rent.rentDate.toLocaleDateString("en-CA");
     await db.query(
       `UPDATE 
         rentals 
@@ -110,7 +109,7 @@ export async function returnRental(req, res) {
         "delayFee"=$2 
     WHERE 
         id=$3;`,
-      [rentDate, delayFee, id]
+      [returnDate, delayFee, id]
     );
     res.sendStatus(200);
   } catch (error) {
