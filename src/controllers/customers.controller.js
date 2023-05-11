@@ -5,8 +5,12 @@ export async function getCustomers(req, res) {
 
   try {
     if (!req.params.id) {
-      const customers = await db.query(`SELECT * FROM customers`);
-      return res.send(customers.rows);
+      const result = await db.query(`SELECT * FROM customers`);
+      const costumers = result.rows.map((c) => ({
+        ...c,
+        birthday: c.birthday.toISOString().substring(0, 10),
+      }));
+      return res.send(costumers);
     }
 
     const customer = await db.query(`SELECT * FROM customers WHERE id=$1`, [
@@ -14,6 +18,10 @@ export async function getCustomers(req, res) {
     ]);
 
     if (!customer.rowCount) return res.sendStatus(404);
+
+    customer.rows[0].birthday = customer.rows[0].birthday
+      .toISOString()
+      .substring(0, 10);
 
     res.send(customer.rows[0]);
   } catch (error) {
