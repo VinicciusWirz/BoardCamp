@@ -81,7 +81,8 @@ export async function addRental(req, res) {
 
 export async function returnRental(req, res) {
   const id = req.params.id;
-  const returnDate = new Date().toLocaleDateString("en-CA");
+  // const returnDate = new Date().toLocaleDateString("en-CA");
+  const returnDate = '2023-05-01';
   const rent = res.locals.rental;
   if (rent.returnDate) return res.sendStatus(400);
 
@@ -96,11 +97,13 @@ export async function returnRental(req, res) {
 
     let delayFee = null;
     if (daysUsed > rent.daysRented) {
-      delayFee = daysUsed * (rent.originalPrice / (daysUsed - rent.daysRented));
+      const daysLate = daysUsed - rent.daysRented;
+      const originalPrice = rent.originalPrice / rent.daysRented
+      delayFee = daysLate * originalPrice;
+      console.log(delayFee)
     } else {
       delayFee = 0;
     }
-
     await db.query(
       `UPDATE 
         rentals 
