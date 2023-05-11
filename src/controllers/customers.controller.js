@@ -54,10 +54,10 @@ export async function editCustomers(req, res) {
 
   try {
     const cpfInUse = await db.query(
-      `SELECT EXISTS (SELECT * FROM customers WHERE cpf = $1 AND id != $2);`,
+      `SELECT * FROM customers WHERE cpf = $1 AND id != $2;`,
       [cpf, id]
     );
-    if (cpfInUse.rows[0].exists) return res.sendStatus(409);
+    if (cpfInUse.rowCount) return res.sendStatus(409);
 
     await db.query(
       `UPDATE customers SET name=$1, phone=$2, cpf=$3, birthday=$4 WHERE id=$5`,
