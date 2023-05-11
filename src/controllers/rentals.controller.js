@@ -5,40 +5,34 @@ export async function getRentals(req, res) {
   try {
     const query = `
     SELECT
-    rentals.*,
-      customers.id AS customer_id,
+      rentals.*,
       customers.name AS customer_name,
-      games.id AS game_id,
       games.name AS game_name
     FROM rentals
     JOIN customers ON rentals."customerId" = customers.id
     JOIN games ON rentals."gameId" = games.id
     ${customerId ? `WHERE "customerId"=$1` : ``};`;
 
-    let result;
-    if (customerId) {
-      const { rows, rowCount } = await db.query(query, [customerId]);
-      result = { rows, rowCount };
-    } else {
-      const { rows, rowCount } = await db.query(query);
-      result = { rows, rowCount };
-    }
-    const { rows, rowCount } = result;
+    const { rows, rowCount } = customerId
+      ? await db.query(query, [customerId])
+      : await db.query(query);
+
     if (!rowCount) return res.send([]);
 
     const rentalsList = rows.map((r) => ({
-      ...r,
+      id: r.id,
+      customerId: r.customerId,
+      gameId: r.gameId,
       rentDate: r.rentDate.toLocaleDateString("en-CA"),
-      returnDate: r.returnDate ? r.returnDate.toLocaleDateString("en-CA") : null,
-      customer: { id: r.customer_id, name: r.customer_name },
-      game: { id: r.game_id, name: r.game_name },
+      daysRented: r.daysRented,
+      returnDate: r.returnDate
+        ? r.returnDate.toLocaleDateString("en-CA")
+        : null,
+      originalPrice: r.originalPrice,
+      delayFee: r.delayFee,
+      customer: { id: r.customerId, name: r.customer_name },
+      game: { id: r.gameId, name: r.game_name },
     }));
-    rentalsList.forEach((r) => {
-      delete r.game_id;
-      delete r.game_name;
-      delete r.customer_id;
-      delete r.customer_name;
-    });
 
     res.send(rentalsList);
   } catch (error) {
@@ -98,7 +92,7 @@ export async function returnRental(req, res) {
     let delayFee = null;
     if (daysUsed > rent.daysRented) {
       const daysLate = daysUsed - rent.daysRented;
-      const originalPrice = rent.originalPrice / rent.daysRented
+      const originalPrice = rent.originalPrice / rent.daysRented;
       delayFee = daysLate * originalPrice;
     } else {
       delayFee = 0;
