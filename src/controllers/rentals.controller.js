@@ -29,6 +29,7 @@ export async function getRentals(req, res) {
     const rentalsList = rows.map((r) => ({
       ...r,
       rentDate: r.rentDate.toLocaleDateString("en-CA"),
+      returnDate: r.returnDate ? r.returnDate.toLocaleDateString("en-CA") : null,
       customer: { id: r.customer_id, name: r.customer_name },
       game: { id: r.game_id, name: r.game_name },
     }));
