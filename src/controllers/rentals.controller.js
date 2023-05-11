@@ -43,7 +43,7 @@ export async function addRental(req, res) {
     ]);
     const game = await db.query(`SELECT * FROM games WHERE id=$1;`, [gameId]);
     const gameRentals = await db.query(
-      `SELECT * FROM rentals WHERE "gameId"=$1;`,
+      `SELECT * FROM rentals WHERE "gameId"=$1 AND "returnDate" IS NULL;`,
       [gameId]
     );
     const validation =

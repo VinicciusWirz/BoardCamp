@@ -8,7 +8,7 @@ export async function getCustomers(req, res) {
       const result = await db.query(`SELECT * FROM customers`);
       const costumers = result.rows.map((c) => ({
         ...c,
-        birthday: c.birthday.toISOString().toLocaleDateString('en-CA'),
+        birthday: c.birthday.toLocaleDateString("en-CA"),
       }));
       return res.send(costumers);
     }
@@ -19,9 +19,8 @@ export async function getCustomers(req, res) {
 
     if (!customer.rowCount) return res.sendStatus(404);
 
-    customer.rows[0].birthday = customer.rows[0].birthday
-      .toISOString()
-      .toLocaleDateString('en-CA');
+    customer.rows[0].birthday =
+      customer.rows[0].birthday.toLocaleDateString("en-CA");
 
     res.send(customer.rows[0]);
   } catch (error) {
