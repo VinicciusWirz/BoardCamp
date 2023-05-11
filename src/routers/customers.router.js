@@ -5,6 +5,7 @@ import { customerSchema } from "../schemas/customer.schema.js";
 
 const customersRouter = Router();
 
+customersRouter.get("/customers", getCustomers);
 customersRouter.get("/customers/:id", getCustomers);
 customersRouter.post("/customers", schemaValidation(customerSchema), addCustomer);
 

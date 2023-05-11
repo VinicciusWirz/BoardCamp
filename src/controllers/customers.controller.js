@@ -2,7 +2,13 @@ import { db } from "../database/database.connection.js";
 
 export async function getCustomers(req, res) {
   const id = req.params.id;
+
   try {
+    if (!req.params.id) {
+      const customers = await db.query(`SELECT * FROM customers`);
+      return res.send(customers.rows);
+    }
+
     const customer = await db.query(`SELECT * FROM customers WHERE id=$1`, [
       id,
     ]);
@@ -23,7 +29,7 @@ export async function addCustomer(req, res) {
       cpf,
     ]);
     if (customer) return res.sendStatus(409);
-    
+
     await db.query(
       `INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1, $2, $3, $4)`,
       [name, phone, cpf, birthday]
