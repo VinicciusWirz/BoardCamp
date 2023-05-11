@@ -1,19 +1,29 @@
 import { db } from "../database/database.connection.js";
 
 export async function getRentals(req, res) {
+  const customerId = req.query.customerId;
   try {
     const query = `
-        SELECT
-            rentals.*,
-            customers.id AS customer_id,
-            customers.name AS customer_name,
-            games.id AS game_id,
-            games.name AS game_name
-        FROM rentals
-        JOIN customers ON rentals."customerId" = customers.id
-        JOIN games ON rentals."gameId" = games.id;`;
+    SELECT
+    rentals.*,
+      customers.id AS customer_id,
+      customers.name AS customer_name,
+      games.id AS game_id,
+      games.name AS game_name
+    FROM rentals
+    JOIN customers ON rentals."customerId" = customers.id
+    JOIN games ON rentals."gameId" = games.id
+    ${customerId ? `WHERE "customerId"=$1` : ``};`;
 
-    const { rows, rowCount } = await db.query(query);
+    let result;
+    if (customerId) {
+      const { rows, rowCount } = await db.query(query, [customerId]);
+      result = { rows, rowCount };
+    } else {
+      const { rows, rowCount } = await db.query(query);
+      result = { rows, rowCount };
+    }
+    const { rows, rowCount } = result;
     if (!rowCount) return res.send([]);
 
     const rentalsList = rows.map((r) => ({
