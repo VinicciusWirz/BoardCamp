@@ -11,8 +11,7 @@ export async function getRentals(req, res) {
             games.name AS game_name
         FROM rentals
         JOIN customers ON rentals."customerId" = customers.id
-        JOIN games ON rentals."gameId" = games.id
-        ;`;
+        JOIN games ON rentals."gameId" = games.id;`;
 
     const { rows, rowCount } = await db.query(query);
     if (!rowCount) return res.send([]);
@@ -73,30 +72,15 @@ export async function addRental(req, res) {
 export async function returnRental(req, res) {
   const id = req.params.id;
   const returnDate = new Date().toLocaleDateString("en-CA");
+  const rent = res.locals.rental;
+  if (rent.returnDate) return res.sendStatus(400);
 
   try {
-    const { rows: rentRows } = await db.query(
-      `SELECT 
-            rentals."daysRented", 
-            rentals."originalPrice", 
-            rentals."rentDate", 
-            rentals."delayFee",
-            rentals."gameId",
-            rentals."returnDate"
-        FROM 
-            rentals 
-        WHERE 
-            id=$1;`,
-      [id]
-    );
-    if (rentRows[0].returnDate) return res.sendStatus(400);
-
-    const game = await db.query(`SELECT * FROM games WHERE id=$1`, [
-      rentRows[0].gameId,
+    const game = await db.query(`SELECT * FROM games WHERE id=$1;`, [
+      rent.gameId,
     ]);
     if (!game.rowCount) return res.sendStatus(404);
 
-    const rent = rentRows[0];
     const dateDiff = Math.abs(new Date(returnDate) - rent.rentDate);
     const daysUsed = Math.round(dateDiff / 86400000);
 
@@ -118,6 +102,20 @@ export async function returnRental(req, res) {
         id=$3;`,
       [rentDate, delayFee, id]
     );
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+}
+
+export async function deleteRental(req, res) {
+  const id = req.params.id;
+  const rent = res.locals.rental;
+  if (!rent.returnDate) return res.sendStatus(400);
+
+  try {
+    await db.query(`DELETE FROM rentals WHERE id=$1;`, [id]);
+
     res.sendStatus(200);
   } catch (error) {
     res.status(500).send(error.message);
