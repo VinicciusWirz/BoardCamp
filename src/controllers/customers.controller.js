@@ -36,7 +36,7 @@ export async function getCustomers(req, res) {
 
     const customers = rows.map((customer) => ({
       ...customer,
-      birthday: customer.birthday.toISOString().substring(0, 10),
+      birthday: customer.birthday.toLocaleDateString("en-CA"),
     }));
 
     return res.send(id ? customers[0] : customers);
