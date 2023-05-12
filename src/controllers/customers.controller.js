@@ -6,26 +6,30 @@ export async function getCustomers(req, res) {
 
   try {
     if (!req.params.id) {
-      const result = cpf
-        ? await db.query(`SELECT * FROM customers WHERE LOWER(cpf) LIKE LOWER($1);`, [`${cpf}%`])
+      const { rows } = cpf
+        ? await db.query(
+            `SELECT * FROM customers WHERE LOWER(cpf) LIKE LOWER($1);`,
+            [`${cpf}%`]
+          )
         : await db.query(`SELECT * FROM customers`);
-      const costumers = result.rows.map((c) => ({
+      const customers = rows.map((c) => ({
         ...c,
         birthday: c.birthday.toLocaleDateString("en-CA"),
       }));
-      return res.send(costumers);
+      return res.send(customers);
     }
 
-    const customer = await db.query(`SELECT * FROM customers WHERE id=$1`, [
-      id,
-    ]);
+    const { rows, rowCount } = await db.query(
+      `SELECT * FROM customers WHERE id=$1`,
+      [id]
+    );
 
-    if (!customer.rowCount) return res.sendStatus(404);
+    if (!rowCount) return res.sendStatus(404);
 
-    customer.rows[0].birthday =
-      customer.rows[0].birthday.toLocaleDateString("en-CA");
+    const customer = rows[0];
+    customer.birthday = customer.birthday.toLocaleDateString("en-CA");
 
-    res.send(customer.rows[0]);
+    res.send(customer);
   } catch (error) {
     res.status(500).send(error.message);
   }
