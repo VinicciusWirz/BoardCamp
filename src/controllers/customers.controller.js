@@ -6,7 +6,7 @@ export async function getCustomers(req, res) {
   const params = [];
   let query = `SELECT * FROM customers`;
   if (id) {
-    query += `WHERE id=$1`;
+    query += ` WHERE id=$1`;
     params.push(id);
   } else {
     if (cpf) {
@@ -23,6 +23,7 @@ export async function getCustomers(req, res) {
     }
   }
   query += `;`;
+
   try {
     const { rows, rowCount } = !params.length
       ? await db.query(query)
