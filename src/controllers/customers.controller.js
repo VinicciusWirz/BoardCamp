@@ -31,7 +31,7 @@ export async function getCustomers(req, res) {
       birthday: c.birthday.toLocaleDateString("en-CA"),
     }));
 
-    return res.send(customers);
+    return res.send(id ? customers[0] : customers);
   } catch (error) {
     res.status(500).send(error.message);
   }

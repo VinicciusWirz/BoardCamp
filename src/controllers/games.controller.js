@@ -2,10 +2,27 @@ import { db } from "../database/database.connection.js";
 
 export async function getGames(req, res) {
   const name = req.query.name;
+  const offset = req.query.offset;
+  const limit = req.query.limit;
+  const params = [];
+  let query = `SELECT * FROM games `;
+  if (name) {
+    query += `WHERE LOWER(name) LIKE LOWER($${params.length + 1})`;
+    params.push(`${name}%`);
+  }
+  if (offset) {
+    query += `OFFSET $${params.length + 1}`;
+    params.push(Number(offset));
+  }
+  if (limit) {
+    query += `LIMIT $${params.length + 1}`;
+    params.push(Number(limit));
+  }
+  query += `;`;
   try {
-    const { rows: games } = name
-      ? await db.query(`SELECT * FROM games WHERE LOWER(name) LIKE LOWER($1);`, [`${name}%`])
-      : await db.query(`SELECT * FROM games;`);
+    const { rows: games } = !params.length
+      ? await db.query(query)
+      : await db.query(query, params);
     res.send(games);
   } catch (error) {
     res.status(500).send(error.message);
