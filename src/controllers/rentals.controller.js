@@ -1,8 +1,9 @@
 import { db } from "../database/database.connection.js";
 
 export async function getRentals(req, res) {
-  const { customerId, gameId, offset, limit } = req.query;
+  const { customerId, gameId, offset, limit, status, startDate } = req.query;
   const params = [];
+  let where = ``;
   let query = `
   SELECT
     rentals.*,
@@ -13,11 +14,21 @@ export async function getRentals(req, res) {
   JOIN games ON rentals."gameId" = games.id`;
   if (customerId) {
     params.push(customerId);
-    query += ` WHERE "customerId"=$${params.length}`;
+    where += ` WHERE "customerId"=$${params.length}`;
   } else if (gameId) {
     params.push(gameId);
-    query += ` WHERE "gameId"=$${params.length}`;
+    where += ` WHERE "gameId"=$${params.length}`;
   }
+  if (status) {
+    where += `${where ? " AND " : " WHERE "}"returnDate" IS ${
+      status === "open" ? "NULL" : status === "closed" && "NOT NULL"
+    }`;
+  }
+  if (startDate) {
+    params.push(startDate);
+    where += `${where ? " AND " : " WHERE "}"rentDate" >= $${params.length}`;
+  }
+  query += where;
   if (offset) {
     params.push(Number(offset));
     query += ` OFFSET $${params.length}`;
