@@ -6,7 +6,7 @@ export async function getCustomers(req, res) {
   const params = [];
   let query = `SELECT * FROM customers`;
   if (id) {
-    query += ` WHERE id=$1`;
+    query += ` WHERE id = $1`;
     params.push(id);
   } else {
     if (cpf) {
@@ -32,9 +32,14 @@ export async function getCustomers(req, res) {
       ? await db.query(query)
       : await db.query(query, params);
 
-    if (!rowCount) return res.sendStatus(404);
+    if (!rowCount && query.includes('id')) return res.sendStatus(404);
 
-    return res.send(id ? rows[0] : rows);
+    const customers = rows.map((customer) => ({
+      ...customer,
+      birthday: customer.birthday.toISOString().substring(0, 10),
+    }));
+
+    return res.send(id ? customers[0] : customers);
   } catch (error) {
     res.status(500).send(error.message);
   }
