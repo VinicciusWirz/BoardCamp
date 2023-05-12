@@ -3,26 +3,32 @@ import { db } from "../database/database.connection.js";
 export async function getCustomers(req, res) {
   const id = req.params.id;
   const cpf = req.query.cpf;
-
+  const offset = req.query.offset;
+  const limit = req.query.limit;
+  const params = [];
+  let query = `SELECT * FROM customers`;
+  if (id) {
+    query += `WHERE id=$1`;
+    params.push(id);
+  } else {
+    if (cpf) {
+      params.push(`${cpf}%`);
+      query += ` WHERE LOWER(cpf) LIKE LOWER($${params.length})`;
+    }
+    if (offset) {
+      params.push(offset);
+      query += ` OFFSET $${params.length}`;
+    }
+    if (limit) {
+      params.push(limit);
+      query += ` LIMIT $${params.length}`;
+    }
+  }
+  query += `;`;
   try {
-    const query = `
-      SELECT * 
-      FROM customers 
-      ${
-        id
-          ? `WHERE id=$1`
-          : cpf
-          ? `WHERE LOWER(cpf) 
-      LIKE LOWER($1)`
-          : ``
-      }
-      ;`;
-
-    const { rows, rowCount } = id
-      ? await db.query(query, [id])
-      : cpf
-      ? await db.query(query, [`${cpf}%`])
-      : await db.query(query);
+    const { rows, rowCount } = !params.length
+      ? await db.query(query)
+      : await db.query(query, params);
 
     if (!rowCount) return res.sendStatus(404);
 

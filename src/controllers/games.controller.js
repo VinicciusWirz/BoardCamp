@@ -7,16 +7,16 @@ export async function getGames(req, res) {
   const params = [];
   let query = `SELECT * FROM games `;
   if (name) {
-    query += `WHERE LOWER(name) LIKE LOWER($${params.length + 1})`;
     params.push(`${name}%`);
+    query += `WHERE LOWER(name) LIKE LOWER($${params.length})`;
   }
   if (offset) {
-    query += `OFFSET $${params.length + 1}`;
     params.push(Number(offset));
+    query += ` OFFSET $${params.length}`;
   }
   if (limit) {
-    query += `LIMIT $${params.length + 1}`;
     params.push(Number(limit));
+    query += ` LIMIT $${params.length}`;
   }
   query += `;`;
   try {
