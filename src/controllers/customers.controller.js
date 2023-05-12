@@ -32,11 +32,11 @@ export async function getCustomers(req, res) {
       ? await db.query(query)
       : await db.query(query, params);
 
-    if (!rowCount && query.includes('id')) return res.sendStatus(404);
+    if (!rowCount && query.includes("id")) return res.sendStatus(404);
 
     const customers = rows.map((customer) => ({
       ...customer,
-      birthday: customer.birthday.toLocaleDateString("en-CA"),
+      birthday: customer.birthday.toISOString().substring(0, 10),
     }));
 
     return res.send(id ? customers[0] : customers);

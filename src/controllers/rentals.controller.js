@@ -54,10 +54,10 @@ export async function getRentals(req, res) {
       id: r.id,
       customerId: r.customerId,
       gameId: r.gameId,
-      rentDate: r.rentDate.toLocaleDateString("en-CA"),
+      rentDate: r.rentDate.toISOString().substring(0, 10),
       daysRented: r.daysRented,
       returnDate: r.returnDate
-        ? r.returnDate.toLocaleDateString("en-CA")
+        ? r.returnDate.toISOString().substring(0, 10)
         : null,
       originalPrice: r.originalPrice,
       delayFee: r.delayFee,
@@ -89,7 +89,7 @@ export async function addRental(req, res) {
 
     if (validation) return res.sendStatus(400);
 
-    const rentDate = new Date().toLocaleDateString("en-CA");
+    const rentDate = new Date().toISOString().substring(0, 10);
     const originalPrice = game.rows[0].pricePerDay * daysRented;
 
     await db.query(
@@ -107,7 +107,7 @@ export async function addRental(req, res) {
 
 export async function returnRental(req, res) {
   const id = req.params.id;
-  const returnDate = new Date().toLocaleDateString("en-CA");
+  const returnDate = new Date().toISOString().substring(0, 10);
   const rent = res.locals.rental;
   if (rent.returnDate) return res.sendStatus(400);
 
