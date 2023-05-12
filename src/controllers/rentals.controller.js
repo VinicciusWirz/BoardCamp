@@ -1,7 +1,8 @@
 import { db } from "../database/database.connection.js";
 
 export async function getRentals(req, res) {
-  const { customerId, gameId, offset, limit, status, startDate } = req.query;
+  const { customerId, gameId, offset, limit, status, startDate, order, desc } =
+    req.query;
   const params = [];
   let where = ``;
   let query = `
@@ -36,6 +37,9 @@ export async function getRentals(req, res) {
   if (limit) {
     params.push(Number(limit));
     query += ` LIMIT $${params.length}`;
+  }
+  if (order) {
+    query += ` ORDER BY "${order}"${desc ? ` DESC` : ``}`;
   }
   query += `;`;
 

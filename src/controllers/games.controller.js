@@ -17,7 +17,7 @@ export async function getGames(req, res) {
     query += ` LIMIT $${params.length}`;
   }
   if (order) {
-    query += ` ORDER BY ${order}${desc ? ` DESC` : ``}`;
+    query += ` ORDER BY "${order}"${desc ? ` DESC` : ``}`;
   }
   query += `;`;
 

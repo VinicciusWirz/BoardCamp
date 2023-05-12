@@ -2,7 +2,7 @@ import { db } from "../database/database.connection.js";
 
 export async function getCustomers(req, res) {
   const id = req.params.id;
-  const { cpf, offset, limit } = req.query;
+  const { cpf, offset, limit, order, desc } = req.query;
   const params = [];
   let query = `SELECT * FROM customers`;
   if (id) {
@@ -20,6 +20,9 @@ export async function getCustomers(req, res) {
     if (limit) {
       params.push(Number(limit));
       query += ` LIMIT $${params.length}`;
+    }
+    if (order) {
+      query += ` ORDER BY "${order}"${desc ? ` DESC` : ``}`;
     }
   }
   query += `;`;
