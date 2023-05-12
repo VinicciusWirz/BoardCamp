@@ -34,11 +34,6 @@ export async function getCustomers(req, res) {
 
     if (!rowCount) return res.sendStatus(404);
 
-    const customers = rows.map((c) => ({
-      ...c,
-      birthday: c.birthday.toLocaleDateString("en-CA"),
-    }));
-
     return res.send(id ? rows[0] : rows);
   } catch (error) {
     res.status(500).send(error.message);
