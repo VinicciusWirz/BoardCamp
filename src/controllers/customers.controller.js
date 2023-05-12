@@ -2,10 +2,13 @@ import { db } from "../database/database.connection.js";
 
 export async function getCustomers(req, res) {
   const id = req.params.id;
+  const cpf = req.query.cpf;
 
   try {
     if (!req.params.id) {
-      const result = await db.query(`SELECT * FROM customers`);
+      const result = cpf
+        ? await db.query(`SELECT * FROM customers WHERE LOWER(cpf) LIKE LOWER($1);`, [`${cpf}%`])
+        : await db.query(`SELECT * FROM customers`);
       const costumers = result.rows.map((c) => ({
         ...c,
         birthday: c.birthday.toLocaleDateString("en-CA"),
