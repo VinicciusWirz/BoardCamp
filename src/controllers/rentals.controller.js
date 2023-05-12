@@ -1,25 +1,37 @@
 import { db } from "../database/database.connection.js";
 
 export async function getRentals(req, res) {
-  const customerId = req.query.customerId;
-  const gameId = req.query.gameId;
-  try {
-    const query = `
-    SELECT
+  const { customerId, gameId, offset, limit } = req.query;
+  const params = [];
+  let query = `
+  SELECT
     rentals.*,
     customers.name AS customer_name,
     games.name AS game_name
-    FROM rentals
-    JOIN customers ON rentals."customerId" = customers.id
-    JOIN games ON rentals."gameId" = games.id
-    ${ customerId ? `WHERE "customerId"=$1` 
-    : gameId ? `WHERE "gameId"=$1` : ``};`;
-    
-    const { rows, rowCount } = customerId
-      ? await db.query(query, [customerId])
-      : gameId
-      ? await db.query(query, [gameId])
-      : await db.query(query);
+  FROM rentals
+  JOIN customers ON rentals."customerId" = customers.id
+  JOIN games ON rentals."gameId" = games.id`;
+  if (customerId) {
+    params.push(customerId);
+    query += ` WHERE "customerId"=$${params.length}`;
+  } else if (gameId) {
+    params.push(gameId);
+    query += ` WHERE "gameId"=$${params.length}`;
+  }
+  if (offset) {
+    params.push(Number(offset));
+    query += ` OFFSET $${params.length}`;
+  }
+  if (limit) {
+    params.push(Number(limit));
+    query += ` LIMIT $${params.length}`;
+  }
+  query += `;`;
+
+  try {
+    const { rows, rowCount } = !params.length
+      ? await db.query(query)
+      : await db.query(query, params);
 
     if (!rowCount) return res.send([]);
 

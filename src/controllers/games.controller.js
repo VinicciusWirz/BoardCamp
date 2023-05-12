@@ -1,9 +1,7 @@
 import { db } from "../database/database.connection.js";
 
 export async function getGames(req, res) {
-  const name = req.query.name;
-  const offset = req.query.offset;
-  const limit = req.query.limit;
+  const { name, offset, limit } = req.query;
   const params = [];
   let query = `SELECT * FROM games `;
   if (name) {

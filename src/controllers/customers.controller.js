@@ -2,9 +2,7 @@ import { db } from "../database/database.connection.js";
 
 export async function getCustomers(req, res) {
   const id = req.params.id;
-  const cpf = req.query.cpf;
-  const offset = req.query.offset;
-  const limit = req.query.limit;
+  const { cpf, offset, limit } = req.query;
   const params = [];
   let query = `SELECT * FROM customers`;
   if (id) {
@@ -16,11 +14,11 @@ export async function getCustomers(req, res) {
       query += ` WHERE LOWER(cpf) LIKE LOWER($${params.length})`;
     }
     if (offset) {
-      params.push(offset);
+      params.push(Number(offset));
       query += ` OFFSET $${params.length}`;
     }
     if (limit) {
-      params.push(limit);
+      params.push(Number(limit));
       query += ` LIMIT $${params.length}`;
     }
   }
