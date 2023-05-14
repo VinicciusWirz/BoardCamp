@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { db } from "../database/database.connection.js";
 import dateConverter from "../utils/dateConverter.js";
 
@@ -129,8 +130,7 @@ export async function returnRental(req, res) {
     ]);
     if (!game.rowCount) return res.sendStatus(404);
 
-    const dateDiff = Math.abs(new Date(returnDate) - rent.rentDate);
-    const daysUsed = Math.round(dateDiff / 86400000);
+    const daysUsed = dayjs().diff(rent.rentDate, "day");
 
     let delayFee = null;
     if (daysUsed > rent.daysRented) {
