@@ -1,4 +1,5 @@
 import { db } from "../database/database.connection.js";
+import dateConverter from "../utils/dateConverter.js";
 
 export async function getRentals(req, res) {
   const { customerId, gameId, offset, limit, status, startDate, order, desc } =
@@ -38,8 +39,21 @@ export async function getRentals(req, res) {
     params.push(Number(limit));
     query += ` LIMIT $${params.length}`;
   }
-  if (order) {
-    query += ` ORDER BY "${order}"${desc ? ` DESC` : ``}`;
+
+  const validFilters = [
+    "id",
+    "customerId",
+    "gameId",
+    "rentDate",
+    "daysRented",
+    "returnDate",
+    "originalPrice",
+    "delayFee",
+    "customer_name",
+    "game_name",
+  ];
+  if (order && validFilters.includes(order)) {
+    query += ` ORDER BY "${order}"${desc === "true" ? ` DESC` : ``}`;
   }
   query += `;`;
 
@@ -54,11 +68,9 @@ export async function getRentals(req, res) {
       id: r.id,
       customerId: r.customerId,
       gameId: r.gameId,
-      rentDate: r.rentDate.toISOString().substring(0, 10),
+      rentDate: dateConverter(r.rentDate),
       daysRented: r.daysRented,
-      returnDate: r.returnDate
-        ? r.returnDate.toISOString().substring(0, 10)
-        : null,
+      returnDate: r.returnDate ? dateConverter(r.returnDate) : null,
       originalPrice: r.originalPrice,
       delayFee: r.delayFee,
       customer: { id: r.customerId, name: r.customer_name },
@@ -89,7 +101,7 @@ export async function addRental(req, res) {
 
     if (validation) return res.sendStatus(400);
 
-    const rentDate = new Date().toISOString().substring(0, 10);
+    const rentDate = dateConverter(new Date());
     const originalPrice = game.rows[0].pricePerDay * daysRented;
 
     await db.query(
@@ -107,7 +119,7 @@ export async function addRental(req, res) {
 
 export async function returnRental(req, res) {
   const id = req.params.id;
-  const returnDate = new Date().toISOString().substring(0, 10);
+  const returnDate = dateConverter(new Date());
   const rent = res.locals.rental;
   if (rent.returnDate) return res.sendStatus(400);
 

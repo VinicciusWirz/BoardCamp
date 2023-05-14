@@ -1,4 +1,5 @@
 import { db } from "../database/database.connection.js";
+import dateConverter from "../utils/dateConverter.js";
 
 export async function getCustomers(req, res) {
   const id = req.params.id;
@@ -21,8 +22,9 @@ export async function getCustomers(req, res) {
       params.push(Number(limit));
       query += ` LIMIT $${params.length}`;
     }
-    if (order) {
-      query += ` ORDER BY "${order}"${desc ? ` DESC` : ``}`;
+    const validFilters = ["id", "name", "phone", "cpf", "birthday"];
+    if (order && validFilters.includes(order)) {
+      query += ` ORDER BY "${order}"${desc === "true" ? ` DESC` : ``}`;
     }
   }
   query += `;`;
@@ -36,7 +38,7 @@ export async function getCustomers(req, res) {
 
     const customers = rows.map((customer) => ({
       ...customer,
-      birthday: customer.birthday.toISOString().substring(0, 10),
+      birthday: dateConverter(customer.birthday),
     }));
 
     return res.send(id ? customers[0] : customers);

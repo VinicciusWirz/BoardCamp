@@ -16,8 +16,9 @@ export async function getGames(req, res) {
     params.push(Number(limit));
     query += ` LIMIT $${params.length}`;
   }
-  if (order) {
-    query += ` ORDER BY "${order}"${desc ? ` DESC` : ``}`;
+  const validFilters = ["id", "name", "image", "stockTotal", "pricePerDay"];
+  if (order && validFilters.includes(order)) {
+    query += ` ORDER BY "${order}"${desc === "true" ? ` DESC` : ``}`;
   }
   query += `;`;
 
